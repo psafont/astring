@@ -350,13 +350,14 @@ module String : sig
       the matching span. In other words:
       {[(if rev then fst else snd) @@ span ~rev ~min ~max ~sat s]} *)
 
-  val cut : ?rev:bool -> sep:string -> string -> (string * string) option
-  (** [cut ~sep s] is either the pair [Some (l,r)] of the two
-      (possibly empty) substrings of [s] that are delimited by the
-      first match of the non empty separator string [sep] or [None] if
-      [sep] can't be matched in [s]. Matching starts from the
-      beginning of [s] ([rev] is [false], default) or the end ([rev]
-      is [true]).
+  val cut : ?rev:bool -> ?empty:bool -> sep:string -> string -> (string * string) option
+  (** [cut ~sep ~empty s] is either the pair [Some (l,r)] of the two
+      substrings of [s] that are delimited by the first match of the non empty
+      separator string [sep] or [None] if [sep] can't be matched in [s].
+      Matching starts from the beginning of [s] ([rev] is [false], default) or
+      the end ([rev] is [true]). The substrings can be empty when [empty] is
+      [true] (default), and are not allowed to be empty when [empty] is
+      [false], returning [None] instead.
 
       The invariant [l ^ sep ^ r = s] holds.
 
@@ -649,7 +650,7 @@ v}
       sub -> sub
     (** [drop] is like {!String.drop}. *)
 
-    val cut : ?rev:bool -> sep:sub -> sub -> (sub * sub) option
+    val cut : ?rev:bool -> ?empty:bool -> sep:sub -> sub -> (sub * sub) option
     (** [cut] is like {!String.cut}. [sep] can be on a different base string *)
 
     val cuts : ?rev:bool -> ?empty:bool -> sep:sub -> sub -> sub list

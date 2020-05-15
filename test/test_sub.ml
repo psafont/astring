@@ -780,7 +780,9 @@ let cut = test "String.Sub.cut" @@ fun () ->
   let s s =
     String.sub ~start:1 ~stop:(1 + (String.length s)) (strf "\x00%s\x00" s)
   in
-  let cut ?rev ~sep str = String.Sub.cut ?rev ~sep:(s sep) (s str) in
+  let cut ?rev ?empty ~sep str =
+    String.Sub.cut ?rev ?empty ~sep:(s sep) (s str)
+  in
   app_invalid ~pp:ppp (cut ~sep:"") "";
   app_invalid ~pp:ppp (cut ~sep:"") "123";
   eqo (cut "," "")  None;
@@ -846,6 +848,70 @@ let cut = test "String.Sub.cut" @@ fun () ->
   eqo (cut ~rev ~sep:"aa" "aaaaaa") (Some ("aaaa", ""));
   eqo (cut ~rev ~sep:"ab" "afaaaa") None;
   eqo (String.Sub.cut ~sep:(String.sub "/") (String.sub ~stop:3 "a/b/c"))
+    (Some ("a", "b"));
+  let empty = false in
+  eqo (cut ~empty ~sep:"," "") None;
+  eqo (cut ~empty ~sep:"," ",") None;
+  eqo (cut ~empty ~sep:"," ",,") None;
+  eqo (cut ~empty ~sep:"," ",,,") None;
+  eqo (cut ~empty ~sep:"," "123") None;
+  eqo (cut ~empty ~sep:"," ",123") None;
+  eqo (cut ~empty ~sep:"," "123,") None;
+  eqo (cut ~empty ~sep:"," "1,2,3") (Some ("1", "2,3"));
+  eqo (cut ~empty ~sep:"," " 1,2,3") (Some (" 1", "2,3"));
+  eqo (cut ~empty ~sep:"<>" "") None;
+  eqo (cut ~empty ~sep:"<>" "<>") None;
+  eqo (cut ~empty ~sep:"<>" "<><>") None;
+  eqo (cut ~empty ~sep:"<>" "<><><>") None;
+  eqo (cut ~rev ~empty ~sep:"<>" "1") None;
+  eqo (cut ~empty ~sep:"<>" "123") None;
+  eqo (cut ~empty ~sep:"<>" "<>123") None;
+  eqo (cut ~empty ~sep:"<>" "123<>") None;
+  eqo (cut ~empty ~sep:"<>" "1<>2<>3") (Some ("1", "2<>3"));
+  eqo (cut ~empty ~sep:"<>" " 1<>2<>3") (Some (" 1", "2<>3"));
+  eqo (cut ~empty ~sep:"<>" ">>><>>>><>>>><>>>>") (Some (">>>", ">>><>>>><>>>>"));
+  eqo (cut ~empty ~sep:"<->" "<->>->") None;
+  eqo (cut ~rev ~empty ~sep:"<->" "<-") None;
+  eqo (cut ~empty ~sep:"aa" "aa") None;
+  eqo (cut ~empty ~sep:"aa" "aaa") None;
+  eqo (cut ~empty ~sep:"aa" "aaaa") None;
+  eqo (cut ~empty ~sep:"aa" "aaaaa") None;
+  eqo (cut ~empty ~sep:"aa" "aaaaaa") None;
+  eqo (cut ~empty ~sep:"ab" "faaaa") None;
+  eqo (String.Sub.cut ~empty ~sep:(String.sub "/") (String.sub ~start:2 "a/b/c"))
+    (Some ("b", "c"));
+  app_invalid ~pp:ppp (cut ~rev ~empty ~sep:"") "";
+  app_invalid ~pp:ppp (cut ~rev ~empty ~sep:"") "123";
+  eqo (cut ~rev ~empty ~sep:"," "") None;
+  eqo (cut ~rev ~empty ~sep:"," ",") None;
+  eqo (cut ~rev ~empty ~sep:"," ",,") None;
+  eqo (cut ~rev ~empty ~sep:"," ",,,") None;
+  eqo (cut ~rev ~empty ~sep:"," "123") None;
+  eqo (cut ~rev ~empty ~sep:"," ",123") None;
+  eqo (cut ~rev ~empty ~sep:"," "123,") None;
+  eqo (cut ~rev ~empty ~sep:"," "1,2,3") (Some ("1,2", "3"));
+  eqo (cut ~rev ~empty ~sep:"," "1,2,3 ") (Some ("1,2", "3 "));
+  eqo (cut ~rev ~empty ~sep:"<>" "") None;
+  eqo (cut ~rev ~empty ~sep:"<>" "<>") None;
+  eqo (cut ~rev ~empty ~sep:"<>" "<><>") None;
+  eqo (cut ~rev ~empty ~sep:"<>" "<><><>") None;
+  eqo (cut ~rev ~empty ~sep:"<>" "1") None;
+  eqo (cut ~rev ~empty ~sep:"<>" "123") None;
+  eqo (cut ~rev ~empty ~sep:"<>" "<>123") None;
+  eqo (cut ~rev ~empty ~sep:"<>" "123<>") None;
+  eqo (cut ~rev ~empty ~sep:"<>" "1<>2<>3") (Some ("1<>2", "3"));
+  eqo (cut ~rev ~empty ~sep:"<>" "1<>2<>3 ") (Some ("1<>2", "3 "));
+  eqo (cut ~rev ~empty ~sep:"<>" ">>><>>>><>>>><>>>>")
+    (Some (">>><>>>><>>>>", ">>>"));
+  eqo (cut ~rev ~empty ~sep:"<->" "<->>->") None;
+  eqo (cut ~rev ~empty ~sep:"<->" "<-") None;
+  eqo (cut ~rev ~empty ~sep:"aa" "aa") None;
+  eqo (cut ~rev ~empty ~sep:"aa" "aaa") None;
+  eqo (cut ~rev ~empty ~sep:"aa" "aaaa") None;
+  eqo (cut ~rev ~empty ~sep:"aa" "aaaaa") None;
+  eqo (cut ~rev ~empty ~sep:"aa" "aaaaaa") None;
+  eqo (cut ~rev ~empty ~sep:"ab" "afaaaa") None;
+  eqo (String.Sub.cut ~empty ~sep:(String.sub "/") (String.sub ~stop:3 "a/b/c"))
     (Some ("a", "b"));
   ()
 

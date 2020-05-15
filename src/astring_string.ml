@@ -335,7 +335,12 @@ let rcut ~sep s =
   in
   rscan (max_s_idx - max_sep_idx)
 
-let cut ?(rev = false) ~sep s = if rev then rcut ~sep s else fcut ~sep s
+let cut ?(rev = false) ?(empty = true) ~sep s =
+  let components = if rev then rcut ~sep s else fcut ~sep s in
+  match empty, components with
+  | false, Some (left, _) when is_empty left -> None
+  | false, Some (_, right) when is_empty right -> None
+  | _, cut -> cut
 
 let add_sub ~no_empty s ~start ~stop acc =
   if start = stop then (if no_empty then acc else empty :: acc) else
